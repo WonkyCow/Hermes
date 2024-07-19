@@ -9,11 +9,12 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using Hermes.Commands.SlashCommands;
 using Newtonsoft.Json;
 
-namespace hermes
+namespace Hermes
 {
-   internal class Program
+    internal class Program
     {
         private static DiscordClient Client { get; set; }
         private static CommandsNextExtension Commands { get; set; }
@@ -40,7 +41,7 @@ namespace hermes
 
             //set the command configuration
             var commandsConfig = new CommandsNextConfiguration()
-            { 
+            {
                 StringPrefixes = new string[] { jsonReader.prefix },
                 EnableMentionPrefix = true,
                 EnableDefaultHelp = true
@@ -52,12 +53,11 @@ namespace hermes
             //Enable slash commands
             var slashCommandsConfiguration = Client.UseSlashCommands();
 
-            //register command class
-            Commands.RegisterCommands<TestCommand>();
+            //register prefix commands
+            //Commands.RegisterCommands<CommandClassHere>();
 
             //register slash commands
-            slashCommandsConfiguration.RegisterCommands<TestCommandSlash>();
-            slashCommandsConfiguration.RegisterCommands<ArbitrageChecker>();
+            slashCommandsConfiguration.RegisterCommands<pingCommand>();
 
 
             //Connect to the discord gateway
@@ -66,3 +66,10 @@ namespace hermes
             //Ensure the bot runs indefinitely, while the program is running
             await Task.Delay(-1);
         }
+
+        private static Task Client_Ready(DiscordClient sender, DSharpPlus.EventArgs.ReadyEventArgs args)
+        {
+            return Task.CompletedTask;
+        }
+    }
+}
