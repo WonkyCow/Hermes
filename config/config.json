@@ -1,0 +1,5 @@
+﻿//When running the bot, this file should be filled out, and placed in . DO NOT leave the bot token exposed in the repo.
+{
+  "token": "token-here",
+  "prefix": "!"
+}
