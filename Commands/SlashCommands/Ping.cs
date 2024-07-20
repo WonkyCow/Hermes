@@ -20,12 +20,20 @@ namespace Hermes.Commands.SlashCommands
                 // Send the result to the channel where the command was invoked
                 await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Pong!"));
                 Console.WriteLine("EditResponseAsync successful");
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Ping Command Ran Successfully");
+                Console.ForegroundColor = ConsoleColor.White;
+
             }
             catch (Exception ex)
             {
                 // Log the exception or handle it as needed
                 Console.WriteLine(ex.ToString());
                 await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("An error occurred while processing the command."));
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Ping Command Failed");
+                Console.ForegroundColor = ConsoleColor.White;
             }
         }
     }

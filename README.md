@@ -14,8 +14,14 @@ This bot is created for the PCHH server to gather data for the creation of Audit
 
 **Status**
 
-Bot goes online, and reponses to slash(/) commands. This was tested via the implementation of the /ping command.
+Audit command functional
+- Gathers displayname, username, ID
+- Logs Number of messages sent, and messages sent in the last 30 days (does not work retro-actively)
+- Does not integrate with other bots
+- Stores to a local SQLl database, and displays as an embedded message in discord
+
+- Ping command to check if the bot is responsive
 
 **Recent Changes**
 
-First Push - No changes.
+Added ``/Create Audit (role)`` command

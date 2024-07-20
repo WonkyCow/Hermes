@@ -6,11 +6,10 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
-using Hermes.Commands.SlashCommands;
 using Newtonsoft.Json;
+using Microsoft.Data.Sqlite;
 
 namespace Hermes
 {
@@ -18,15 +17,19 @@ namespace Hermes
     {
         private static DiscordClient Client { get; set; }
         private static CommandsNextExtension Commands { get; set; }
+        public static Database _database;
 
         static async Task Main(string[] args)
         {
-            //declare new json reader
+            // Initialize the database
+            _database = new Database("Data Source=messages.db");
+
+            // Declare a new json reader
             var jsonReader = new JSONReader();
-            //call json reader
+            // Call json reader
             await jsonReader.ReadJSON();
 
-            //set the Discord App Configuration
+            // Set the Discord App Configuration
             var discordConfig = new DiscordConfiguration()
             {
                 Intents = DiscordIntents.All,
@@ -39,7 +42,7 @@ namespace Hermes
 
             Client.Ready += Client_Ready;
 
-            //set the command configuration
+            // Set the command configuration
             var commandsConfig = new CommandsNextConfiguration()
             {
                 StringPrefixes = new string[] { jsonReader.prefix },
@@ -47,28 +50,39 @@ namespace Hermes
                 EnableDefaultHelp = true
             };
 
-            //initialise the CommandsNextExtension property
+            // Initialize the CommandsNextExtension property
             Commands = Client.UseCommandsNext(commandsConfig);
 
-            //Enable slash commands
+            // Enable slash commands
             var slashCommandsConfiguration = Client.UseSlashCommands();
 
-            //register prefix commands
-            //Commands.RegisterCommands<CommandClassHere>();
+            // Register command class
+            //Commands.RegisterCommands<TestCommand>();
 
-            //register slash commands
-            slashCommandsConfiguration.RegisterCommands<pingCommand>();
+            // Register slash commands
+            slashCommandsConfiguration.RegisterCommands<Hermes.Commands.SlashCommands.pingCommand>();
+            slashCommandsConfiguration.RegisterCommands<Hermes.Commands.SlashCommands.CreateAuditCommand>();
 
 
-            //Connect to the discord gateway
+            // Connect to the discord gateway
             await Client.ConnectAsync();
 
-            //Ensure the bot runs indefinitely, while the program is running
+            // Log messages
+            Client.MessageCreated += Client_MessageCreated;
+
+            // Ensure the bot runs indefinitely, while the program is running
             await Task.Delay(-1);
         }
 
-        private static Task Client_Ready(DiscordClient sender, DSharpPlus.EventArgs.ReadyEventArgs args)
+        private static Task Client_MessageCreated(DiscordClient sender, MessageCreateEventArgs e)
         {
+            _database.LogMessage(e.Author.Id, e.Guild.Id, e.Channel.Id, e.Message.Id, DateTime.UtcNow);
+            return Task.CompletedTask;
+        }
+
+        private static Task Client_Ready(DiscordClient sender, ReadyEventArgs e)
+        {
+            Console.WriteLine("Client is ready to process events.");
             return Task.CompletedTask;
         }
     }
