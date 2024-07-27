@@ -61,7 +61,7 @@ namespace Hermes
             }
         }
 
-        public int GetTotalMessages(ulong userId)
+        public int GetTotalMessages(ulong userId, ulong guildId)
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
@@ -72,12 +72,13 @@ namespace Hermes
                 SELECT COUNT(*) FROM Messages
                 WHERE UserId = $userId";
                 command.Parameters.AddWithValue("$userId", userId.ToString());
+                command.Parameters.AddWithValue("$guildId", guildId.ToString());
 
                 return Convert.ToInt32(command.ExecuteScalar());
             }
         }
 
-        public int GetMessagesInLast30Days(ulong userId)
+        public int GetMessagesInLast30Days(ulong userId, ulong guildId)
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
@@ -88,13 +89,14 @@ namespace Hermes
                 SELECT COUNT(*) FROM Messages
                 WHERE UserId = $userId AND Timestamp >= $thirtyDaysAgo";
                 command.Parameters.AddWithValue("$userId", userId.ToString());
+                command.Parameters.AddWithValue("$guildId", guildId.ToString());
                 command.Parameters.AddWithValue("$thirtyDaysAgo", DateTime.UtcNow.AddDays(-30).ToString("o"));
 
                 return Convert.ToInt32(command.ExecuteScalar());
             }
         }
 
-        public DateTime? GetLastMessageTimestamp(ulong userId)
+        public DateTime? GetLastMessageTimestamp(ulong userId, ulong guildId)
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
@@ -105,6 +107,7 @@ namespace Hermes
                 SELECT MAX(Timestamp) FROM Messages
                 WHERE UserId = $userId";
                 command.Parameters.AddWithValue("$userId", userId.ToString());
+                command.Parameters.AddWithValue("$guildId", guildId.ToString());
 
                 var result = command.ExecuteScalar()?.ToString();
                 if (DateTime.TryParse(result, out DateTime timestamp))
@@ -113,6 +116,40 @@ namespace Hermes
                 }
                 return null;
             }
+        }
+        public List<User> GetAllUsers()
+        {
+            var users = new List<User>();
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = @"
+                SELECT DISTINCT UserId, DisplayName, Username
+                FROM Messages";
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var user = new User
+                        {
+                            UserId = ulong.Parse(reader.GetString(0)),
+                            DisplayName = reader.GetString(1),
+                            Username = reader.GetString(2)
+                        };
+                        users.Add(user);
+                    }
+                }
+            }
+            return users;
+        }
+        public class User
+        {
+            public ulong UserId { get; set; }
+            public string DisplayName { get; set; }
+            public string Username { get; set; }
         }
     }
 

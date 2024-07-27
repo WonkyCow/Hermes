@@ -10,6 +10,8 @@ using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using Newtonsoft.Json;
 using Microsoft.Data.Sqlite;
+using DSharpPlus.Interactivity;
+using Hermes.Commands.SlashCommands;
 
 namespace Hermes
 {
@@ -26,6 +28,7 @@ namespace Hermes
 
             // Declare a new json reader
             var jsonReader = new JSONReader();
+
             // Call json reader
             await jsonReader.ReadJSON();
 
@@ -61,8 +64,13 @@ namespace Hermes
 
             // Register slash commands
             slashCommandsConfiguration.RegisterCommands<Hermes.Commands.SlashCommands.pingCommand>();
-            slashCommandsConfiguration.RegisterCommands<Hermes.Commands.SlashCommands.CreateAuditCommand>();
+            slashCommandsConfiguration.RegisterCommands<Hermes.Commands.SlashCommands.CreateCommands>(); 
 
+            // Initialize the Interactivity extension
+            Client.UseInteractivity(new InteractivityConfiguration
+            {
+                Timeout = TimeSpan.FromMinutes(5)
+            });
 
             // Connect to the discord gateway
             await Client.ConnectAsync();
@@ -74,6 +82,7 @@ namespace Hermes
             await Task.Delay(-1);
         }
 
+        // Logs messages to the database
         private static Task Client_MessageCreated(DiscordClient sender, MessageCreateEventArgs e)
         {
             _database.LogMessage(e.Author.Id, e.Guild.Id, e.Channel.Id, e.Message.Id, DateTime.UtcNow);
